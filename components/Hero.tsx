@@ -25,20 +25,20 @@ export default function Hero() {
           Through innovative design and modern architecture, your brand gains exceptional value.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <Link
-            href="/projects"
+          <a
+            href="/Portfolio/projects"
             className="btn bg-gray-900 text-white px-8 py-3 rounded-lg text-lg transition-transform duration-100 hover:scale-105"
             style={{ backgroundColor: 'rgb(17 24 39)' }}
           >
             View Projects
-          </Link>
-          <Link
-            href="/contact"
+          </a>
+          <a
+            href="/Portfolio/contact"
             className="btn bg-gray-900 text-white px-8 py-3 rounded-lg text-lg transition-transform duration-100 hover:scale-105"
             style={{ backgroundColor: 'rgb(17 24 39)' }}
           >
             Get in Touch
-          </Link>
+          </a>
         </div>
       </div>
       
