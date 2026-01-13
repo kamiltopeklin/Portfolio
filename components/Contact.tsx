@@ -32,16 +32,15 @@ export default function Contact() {
     setSubmitStatus('idle')
 
     try {
-      // Submit via API route
-      const response = await fetch('/api/contact', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(formData)
-      })
-
-      const result = await response.json()
-
-      if (response.ok && result.success) {
+      // For GitHub Pages, use mailto as fallback or EmailJS
+      // Option 1: Direct mailto (simple but requires email client)
+      const mailtoLink = `mailto:Kamiltopeklin@gmail.com?subject=${encodeURIComponent(formData.subject)}&body=${encodeURIComponent(`From: ${formData.email}\n\n${formData.message}`)}`
+      
+      // Try to open mailto (works on most devices)
+      window.location.href = mailtoLink
+      
+      // Show success after a short delay
+      setTimeout(() => {
         setSubmitStatus('success')
         setFormData({
           email: '',
@@ -51,13 +50,12 @@ export default function Contact() {
         })
         const form = e.target as HTMLFormElement
         form.reset()
-      } else {
-        setSubmitStatus('error')
-      }
+        setIsSubmitting(false)
+      }, 500)
+      
     } catch (error) {
       console.error('Form submission error:', error)
       setSubmitStatus('error')
-    } finally {
       setIsSubmitting(false)
     }
   }
