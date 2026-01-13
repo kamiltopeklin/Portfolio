@@ -9,6 +9,8 @@ export default function Contact() {
     message: '',
     acceptPrivacy: false
   })
+  const [isSubmitting, setIsSubmitting] = useState(false)
+  const [submitStatus, setSubmitStatus] = useState<'idle' | 'success' | 'error'>('idle')
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement | HTMLTextAreaElement>) => {
     const { name, value, type } = e.target
@@ -18,10 +20,47 @@ export default function Contact() {
     }))
   }
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault()
-    // Handle form submission here
-    console.log('Form submitted:', formData)
+    
+    if (!formData.acceptPrivacy) {
+      alert('Please accept the privacy policy to continue.')
+      return
+    }
+
+    setIsSubmitting(true)
+    setSubmitStatus('idle')
+
+    try {
+      const form = e.target as HTMLFormElement
+      const formDataToSend = new FormData(form)
+      
+      // Submit to Netlify Forms endpoint
+      const response = await fetch('/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams(formDataToSend as any).toString()
+      })
+
+      if (response.ok) {
+        setSubmitStatus('success')
+        setFormData({
+          email: '',
+          subject: '',
+          message: '',
+          acceptPrivacy: false
+        })
+        // Reset form
+        form.reset()
+      } else {
+        setSubmitStatus('error')
+      }
+    } catch (error) {
+      console.error('Form submission error:', error)
+      setSubmitStatus('error')
+    } finally {
+      setIsSubmitting(false)
+    }
   }
 
   return (
@@ -50,8 +89,33 @@ export default function Contact() {
             Please contact me at <a href="mailto:Kamiltopeklin@gmail.com" className="text-blue-400 hover:text-blue-300 underline">Kamiltopeklin@gmail.com</a> or use this contact form.
           </p>
 
+          {/* Success/Error Messages */}
+          {submitStatus === 'success' && (
+            <div className="mb-6 p-4 bg-green-600 text-white rounded-lg text-center">
+              Thank you! Your message has been sent successfully. I&apos;ll get back to you soon.
+            </div>
+          )}
+          {submitStatus === 'error' && (
+            <div className="mb-6 p-4 bg-red-600 text-white rounded-lg text-center">
+              Sorry, there was an error sending your message. Please try again or email me directly at Kamiltopeklin@gmail.com
+            </div>
+          )}
+
           {/* Contact Form */}
-          <form onSubmit={handleSubmit} className="space-y-8">
+          <form 
+            name="contact" 
+            method="POST" 
+            data-netlify="true" 
+            netlify-honeypot="bot-field"
+            onSubmit={handleSubmit} 
+            className="space-y-8"
+          >
+            {/* Hidden field for Netlify Forms */}
+            <input type="hidden" name="form-name" value="contact" />
+            {/* Hidden field for spam protection */}
+            <input type="hidden" name="bot-field" />
+            {/* Hidden field to set recipient email */}
+            <input type="hidden" name="_to" value="Kamiltopeklin@gmail.com" />
             {/* Email Field */}
             <div>
               <div className="flex items-center mb-2">
@@ -160,10 +224,11 @@ export default function Contact() {
             <div className="flex justify-center pt-4">
               <button
                 type="submit"
-                className="px-8 py-3 bg-purple-900 border-2 border-purple-600 text-white font-semibold uppercase rounded-lg hover:bg-purple-800 transition-colors duration-300"
+                disabled={isSubmitting}
+                className="px-8 py-3 bg-purple-900 border-2 border-purple-600 text-white font-semibold uppercase rounded-lg hover:bg-purple-800 transition-colors duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                 style={{ fontFamily: "'Montserrat', sans-serif" }}
               >
-                SEND MESSAGE
+                {isSubmitting ? 'SENDING...' : 'SEND MESSAGE'}
               </button>
             </div>
           </form>
