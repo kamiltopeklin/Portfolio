@@ -32,6 +32,20 @@ export async function POST(request: NextRequest) {
     // Initialize SendGrid with API key
     sgMail.setApiKey(sendGridApiKey)
 
+    // Escape HTML to prevent injection
+    const escapeHtml = (str: string) => {
+      return str
+        .replace(/&/g, '&amp;')
+        .replace(/</g, '&lt;')
+        .replace(/>/g, '&gt;')
+        .replace(/"/g, '&quot;')
+        .replace(/'/g, '&#039;')
+    }
+
+    const safeEmail = escapeHtml(email)
+    const safeSubject = escapeHtml(subject)
+    const safeMessage = escapeHtml(message).replace(/\n/g, '<br>')
+
     // Create HTML email template
     const html = `
       <!DOCTYPE html>
@@ -47,16 +61,16 @@ export async function POST(request: NextRequest) {
             
             <div style="background-color: #f8f9fa; padding: 20px; border-radius: 8px; margin: 20px 0;">
               <h3 style="color: #2f80ed; margin-top: 0;">Message Details:</h3>
-              <p><strong>From:</strong> ${email}</p>
-              <p><strong>Subject:</strong> ${subject}</p>
+              <p><strong>From:</strong> ${safeEmail}</p>
+              <p><strong>Subject:</strong> ${safeSubject}</p>
               <p><strong>Message:</strong></p>
               <p style="background-color: #ffffff; padding: 15px; border-left: 4px solid #2f80ed; margin: 10px 0;">
-                ${message.replace(/\n/g, '<br>')}
+                ${safeMessage}
               </p>
               <p><strong>Submitted:</strong> ${new Date().toLocaleString()}</p>
             </div>
             
-            <p style="margin-top: 20px;">Please reply directly to this email or contact the sender at: <a href="mailto:${email}" style="color: #2f80ed;">${email}</a></p>
+            <p style="margin-top: 20px;">Please reply directly to this email or contact the sender at: <a href="mailto:${safeEmail}" style="color: #2f80ed;">${safeEmail}</a></p>
             
             <br />
             <p>Thanks,<br />Portfolio Contact Form</p>
@@ -100,23 +114,50 @@ export async function POST(request: NextRequest) {
       message: 'Form submitted successfully' 
     })
   } catch (error: any) {
-    console.error('Error in contact form API:', {
+    // Log detailed error information
+    const errorDetails = {
       message: error.message,
-      stack: error.stack,
-      response: error.response?.body
-    })
+      name: error.name,
+      code: error.code,
+      response: error.response?.body,
+      stack: process.env.NODE_ENV === 'development' ? error.stack : undefined
+    }
     
-    // Provide more specific error messages
+    console.error('Error in contact form API:', JSON.stringify(errorDetails, null, 2))
+    
+    // Provide more specific error messages based on error type
     let errorMessage = 'Failed to submit form. Please try again later.'
+    let statusCode = 500
+
+    // Check for specific error types
     if (error.response?.body?.errors) {
       const sendGridErrors = error.response.body.errors
-      console.error('SendGrid errors:', sendGridErrors)
-      errorMessage = 'Email service error. Please try again or contact directly.'
+      console.error('SendGrid API errors:', JSON.stringify(sendGridErrors, null, 2))
+      
+      // Check for common SendGrid errors
+      const firstError = Array.isArray(sendGridErrors) ? sendGridErrors[0] : sendGridErrors
+      if (firstError?.message?.includes('sender')) {
+        errorMessage = 'Email sender not verified. Please contact the site administrator.'
+      } else if (firstError?.message?.includes('API key')) {
+        errorMessage = 'Email service configuration error. Please contact the site administrator.'
+      } else {
+        errorMessage = `Email service error: ${firstError?.message || 'Unknown error'}`
+      }
+    } else if (error.message?.includes('JSON')) {
+      errorMessage = 'Invalid form data. Please check your input and try again.'
+      statusCode = 400
+    } else if (!process.env.SENDGRID_API_KEY || !process.env.EMAIL_USER) {
+      errorMessage = 'Email service not configured. Please contact the site administrator.'
+      statusCode = 500
     }
     
     return NextResponse.json(
-      { error: errorMessage },
-      { status: 500 }
+      { 
+        error: errorMessage,
+        // Include error details in development mode only
+        ...(process.env.NODE_ENV === 'development' && { details: errorDetails })
+      },
+      { status: statusCode }
     )
   }
 }
