@@ -1,5 +1,7 @@
 'use client'
 
+import Link from 'next/link'
+
 export default function Hero() {
   const handleScrollDown = () => {
     // Scroll immediately
@@ -23,20 +25,20 @@ export default function Hero() {
           Through innovative design and modern architecture, your brand gains exceptional value.
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
-          <a
+          <Link
             href="/projects"
             className="btn bg-gray-900 text-white px-8 py-3 rounded-lg text-lg transition-transform duration-100 hover:scale-105"
             style={{ backgroundColor: 'rgb(17 24 39)' }}
           >
             View Projects
-          </a>
-          <a
+          </Link>
+          <Link
             href="/contact"
             className="btn bg-gray-900 text-white px-8 py-3 rounded-lg text-lg transition-transform duration-100 hover:scale-105"
             style={{ backgroundColor: 'rgb(17 24 39)' }}
           >
             Get in Touch
-          </a>
+          </Link>
         </div>
       </div>
       
