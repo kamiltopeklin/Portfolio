@@ -6,6 +6,11 @@ export default function Projects() {
 
   // Helper function to get image path based on project name
   const getImagePath = (projectName: string): string => {
+    // Get basePath for GitHub Pages
+    const basePath = typeof window !== 'undefined' && window.location.pathname.startsWith('/Portfolio') 
+      ? '/Portfolio' 
+      : ''
+    
     const imageMap: { [key: string]: string } = {
       'Zendesk Agent Workspace': '/images/Zendesk Agent Workspace.png',
       'Zendesk Adaptable Agent Workspace': '/images/Zendesk Adaptable Agent.png',
@@ -32,7 +37,9 @@ export default function Projects() {
     // Encode the filename part to handle spaces in URLs
     const parts = path.split('/')
     const filename = parts.pop() || ''
-    return [...parts, encodeURIComponent(filename)].join('/')
+    const encodedPath = [...parts, encodeURIComponent(filename)].join('/')
+    // Add basePath prefix for GitHub Pages
+    return `${basePath}${encodedPath}`
   }
 
   const projects = [
