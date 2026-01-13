@@ -28,7 +28,11 @@ export default function Projects() {
       'Segment': '/images/Twilo Segment.png',
       'Amplitude': '/images/Amplitude.png'
     }
-    return imageMap[projectName] || '/images/default.png'
+    const path = imageMap[projectName] || '/images/default.png'
+    // Encode the filename part to handle spaces in URLs
+    const parts = path.split('/')
+    const filename = parts.pop() || ''
+    return [...parts, encodeURIComponent(filename)].join('/')
   }
 
   const projects = [
@@ -218,6 +222,7 @@ export default function Projects() {
                         className="object-contain"
                         style={{ objectFit: 'contain' }}
                         sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                        unoptimized={true}
                       />
                     </div>
                   </div>
