@@ -32,19 +32,16 @@ export default function Contact() {
     setSubmitStatus('idle')
 
     try {
-      const form = e.target as HTMLFormElement
-      const formDataToSend = new FormData(form)
-      
-      // Submit to Netlify Forms
-      const response = await fetch('/', {
+      // Submit via API route
+      const response = await fetch('/api/contact', {
         method: 'POST',
-        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams(formDataToSend as any).toString()
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(formData)
       })
 
-      // Netlify Forms returns a 200 status even if there are issues
-      // Check if we got redirected or got a success response
-      if (response.ok || response.status === 200 || response.status === 302) {
+      const result = await response.json()
+
+      if (response.ok && result.success) {
         setSubmitStatus('success')
         setFormData({
           email: '',
@@ -52,52 +49,14 @@ export default function Contact() {
           message: '',
           acceptPrivacy: false
         })
+        const form = e.target as HTMLFormElement
         form.reset()
       } else {
-        // If direct submission fails, try API route as fallback
-        const apiResponse = await fetch('/api/contact', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData)
-        })
-
-        if (apiResponse.ok) {
-          setSubmitStatus('success')
-          setFormData({
-            email: '',
-            subject: '',
-            message: '',
-            acceptPrivacy: false
-          })
-          form.reset()
-        } else {
-          setSubmitStatus('error')
-        }
+        setSubmitStatus('error')
       }
     } catch (error) {
       console.error('Form submission error:', error)
-      // Try API route as fallback
-      try {
-        const apiResponse = await fetch('/api/contact', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify(formData)
-        })
-
-        if (apiResponse.ok) {
-          setSubmitStatus('success')
-          setFormData({
-            email: '',
-            subject: '',
-            message: '',
-            acceptPrivacy: false
-          })
-        } else {
-          setSubmitStatus('error')
-        }
-      } catch (apiError) {
-        setSubmitStatus('error')
-      }
+      setSubmitStatus('error')
     } finally {
       setIsSubmitting(false)
     }
@@ -143,20 +102,9 @@ export default function Contact() {
 
           {/* Contact Form */}
           <form 
-            name="contact" 
-            method="POST" 
-            action="/"
-            data-netlify="true" 
-            data-netlify-honeypot="bot-field"
             onSubmit={handleSubmit} 
             className="space-y-8"
           >
-            {/* Hidden field for Netlify Forms */}
-            <input type="hidden" name="form-name" value="contact" />
-            {/* Hidden field for spam protection */}
-            <input type="hidden" name="bot-field" />
-            {/* Hidden field to set recipient email */}
-            <input type="hidden" name="_to" value="Kamiltopeklin@gmail.com" />
             {/* Email Field */}
             <div>
               <div className="flex items-center mb-2">
