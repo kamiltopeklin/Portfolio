@@ -104,7 +104,7 @@ export default function Contact() {
   }
 
   return (
-    <section className="min-h-screen relative overflow-hidden">
+    <section className="min-h-screen relative overflow-hidden pt-20">
       {/* Dark background with world map texture */}
       <div className="absolute inset-0 bg-gradient-to-br from-gray-900 via-gray-800 to-black"></div>
       <div 
