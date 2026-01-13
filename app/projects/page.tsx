@@ -184,7 +184,7 @@ export default function Projects() {
         <div className="container mx-auto px-6">
           <h1 className="section-title mb-4" style={{ fontFamily: "'Montserrat', sans-serif" }}>Projects</h1>
           <p className="text-center text-gray-700 mb-16 max-w-3xl mx-auto">
-            Below are some of the platforms and applications I've worked on. These projects 
+            Below are some of the platforms and applications I&apos;ve worked on. These projects 
             demonstrate my expertise in building scalable, modern web applications across 
             various industries including customer support, IoT, financial services, and analytics.
           </p>

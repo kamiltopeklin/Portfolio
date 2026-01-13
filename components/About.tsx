@@ -5,17 +5,17 @@ export default function About() {
         <h2 className="section-title">Web Application Developer</h2>
         <div className="max-w-5xl mx-auto">
           <p className="text-xl text-gray-700 italic text-center mb-12 mt-8">
-            "Great work is achieved not by adding more, but by refining until only value remains."
+            &ldquo;Great work is achieved not by adding more, but by refining until only value remains.&rdquo;
           </p>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-8 text-gray-700">
             <div className="space-y-6">
               <p className="leading-relaxed">
-                I'm passionate about challenging myself to grow and deliver exceptional solutions. There are no bad ideas—with time and dedication, anything can be improved. What matters most is not giving up, pushing forward, gaining experience, and creating with higher quality. I find inspiration in life and the people around me to build meaningful digital products.
+                I&apos;m passionate about challenging myself to grow and deliver exceptional solutions. There are no bad ideas—with time and dedication, anything can be improved. What matters most is not giving up, pushing forward, gaining experience, and creating with higher quality. I find inspiration in life and the people around me to build meaningful digital products.
               </p>
               
               <p className="leading-relaxed">
-                My clients' primary goal is usually to promote a business or product. My mission is to understand their goals and deliver solutions that exceed expectations. My work is characterized by the highest quality and professionalism. No detail is overlooked. To create a successful website, I develop a clear customer journey vision. I study who your customers are and plan your website to create an emotional connection with them. Layout, typography, structure, colors, and content are crafted with precision.
+                My clients&apos; primary goal is usually to promote a business or product. My mission is to understand their goals and deliver solutions that exceed expectations. My work is characterized by the highest quality and professionalism. No detail is overlooked. To create a successful website, I develop a clear customer journey vision. I study who your customers are and plan your website to create an emotional connection with them. Layout, typography, structure, colors, and content are crafted with precision.
               </p>
             </div>
             

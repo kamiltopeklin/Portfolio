@@ -116,7 +116,7 @@ export default function Experience() {
         <div className="max-w-4xl mx-auto mt-12 p-6 bg-gray-50 rounded-lg">
           <h3 className="text-2xl font-bold mb-4 text-gray-900">Education</h3>
           <p className="text-lg text-gray-700">
-            <strong>Bachelor's Degree in Computer Science</strong>
+            <strong>Bachelor&apos;s Degree in Computer Science</strong>
           </p>
           <p className="text-gray-600">Kyoto University, Kyoto, Japan</p>
         </div>
