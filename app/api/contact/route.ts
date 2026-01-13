@@ -1,11 +1,6 @@
 import { NextRequest, NextResponse } from 'next/server'
 import sgMail from '@sendgrid/mail'
 
-// Initialize SendGrid
-if (process.env.SENDGRID_API_KEY) {
-  sgMail.setApiKey(process.env.SENDGRID_API_KEY)
-}
-
 export async function POST(request: NextRequest) {
   try {
     const body = await request.json()
@@ -20,13 +15,22 @@ export async function POST(request: NextRequest) {
     }
 
     // Validate SendGrid configuration
-    if (!process.env.SENDGRID_API_KEY || !process.env.EMAIL_USER) {
-      console.error('SendGrid configuration missing')
+    const sendGridApiKey = process.env.SENDGRID_API_KEY
+    const emailUser = process.env.EMAIL_USER
+
+    if (!sendGridApiKey || !emailUser) {
+      console.error('SendGrid configuration missing:', {
+        hasApiKey: !!sendGridApiKey,
+        hasEmailUser: !!emailUser
+      })
       return NextResponse.json(
-        { error: 'Email service not configured' },
+        { error: 'Email service not configured. Please contact the site administrator.' },
         { status: 500 }
       )
     }
+
+    // Initialize SendGrid with API key
+    sgMail.setApiKey(sendGridApiKey)
 
     // Create HTML email template
     const html = `
@@ -66,7 +70,7 @@ export async function POST(request: NextRequest) {
     const recipientEmail = 'Kamiltopeklin@gmail.com'
     const msg = {
       to: recipientEmail,
-      from: process.env.EMAIL_USER!,
+      from: emailUser,
       replyTo: email,
       subject: `Portfolio Contact: ${subject}`,
       text: `New contact form submission\n\nFrom: ${email}\nSubject: ${subject}\n\nMessage:\n${message}`,
@@ -74,23 +78,44 @@ export async function POST(request: NextRequest) {
     }
 
     // Send email via SendGrid
-    await sgMail.send(msg)
-
-    console.log('Contact form email sent successfully:', {
-      to: recipientEmail,
-      from: email,
-      subject,
-      timestamp: new Date().toISOString()
-    })
+    try {
+      await sgMail.send(msg)
+      console.log('Contact form email sent successfully:', {
+        to: recipientEmail,
+        from: email,
+        subject,
+        timestamp: new Date().toISOString()
+      })
+    } catch (sendError: any) {
+      console.error('SendGrid API error:', {
+        message: sendError.message,
+        code: sendError.code,
+        response: sendError.response?.body
+      })
+      throw sendError
+    }
 
     return NextResponse.json({ 
       success: true, 
       message: 'Form submitted successfully' 
     })
   } catch (error: any) {
-    console.error('Error sending contact form email:', error.response?.body?.errors || error)
+    console.error('Error in contact form API:', {
+      message: error.message,
+      stack: error.stack,
+      response: error.response?.body
+    })
+    
+    // Provide more specific error messages
+    let errorMessage = 'Failed to submit form. Please try again later.'
+    if (error.response?.body?.errors) {
+      const sendGridErrors = error.response.body.errors
+      console.error('SendGrid errors:', sendGridErrors)
+      errorMessage = 'Email service error. Please try again or contact directly.'
+    }
+    
     return NextResponse.json(
-      { error: 'Failed to submit form. Please try again later.' },
+      { error: errorMessage },
       { status: 500 }
     )
   }
