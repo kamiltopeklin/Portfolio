@@ -26,14 +26,14 @@ export default function Hero() {
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <a
-            href="/Portfolio/projects"
+            href="/Portfolio/projects/"
             className="btn bg-gray-900 text-white px-8 py-3 rounded-lg text-lg transition-transform duration-100 hover:scale-105"
             style={{ backgroundColor: 'rgb(17 24 39)' }}
           >
             View Projects
           </a>
           <a
-            href="/Portfolio/contact"
+            href="/Portfolio/contact/"
             className="btn bg-gray-900 text-white px-8 py-3 rounded-lg text-lg transition-transform duration-100 hover:scale-105"
             style={{ backgroundColor: 'rgb(17 24 39)' }}
           >
