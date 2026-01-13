@@ -9,7 +9,7 @@ permissions:
   contents: read
   pages: write
   id-token: write
-  actions: read  # Required to check artifacts
+  actions: write  # Required to delete artifacts
 
 concurrency:
   group: "pages"
@@ -52,6 +52,47 @@ jobs:
     runs-on: ubuntu-latest
     needs: build
     steps:
+      - name: Cleanup old artifacts from this workflow run
+        uses: actions/github-script@v7
+        with:
+          script: |
+            // Get all artifacts from the current workflow run
+            const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              run_id: context.runId,
+            });
+
+            console.log(`Found ${artifacts.data.artifacts.length} artifacts in this workflow run`);
+            
+            // Find all "github-pages" artifacts
+            const githubPagesArtifacts = artifacts.data.artifacts.filter(
+              artifact => artifact.name === 'github-pages'
+            );
+            
+            if (githubPagesArtifacts.length > 1) {
+              console.log(`Found ${githubPagesArtifacts.length} "github-pages" artifacts. Keeping the most recent one, deleting others...`);
+              
+              // Sort by creation date (newest first)
+              githubPagesArtifacts.sort((a, b) => 
+                new Date(b.created_at) - new Date(a.created_at)
+              );
+              
+              // Delete all except the most recent one
+              for (let i = 1; i < githubPagesArtifacts.length; i++) {
+                await github.rest.actions.deleteArtifact({
+                  owner: context.repo.owner,
+                  repo: context.repo.repo,
+                  artifact_id: githubPagesArtifacts[i].id,
+                });
+                console.log(`Deleted old artifact: ${githubPagesArtifacts[i].id} (created: ${githubPagesArtifacts[i].created_at})`);
+              }
+              
+              console.log(`Kept the most recent artifact: ${githubPagesArtifacts[0].id}`);
+            } else {
+              console.log('Only one or zero "github-pages" artifacts found. No cleanup needed.');
+            }
+
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
