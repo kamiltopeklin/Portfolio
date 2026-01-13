@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import { createPath } from '@/lib/utils'
 
 export default function Hero() {
   const handleScrollDown = () => {
@@ -26,14 +27,14 @@ export default function Hero() {
         </p>
         <div className="flex flex-col sm:flex-row gap-4 justify-center">
           <Link
-            href="/projects"
+            href={createPath('/projects')}
             className="btn bg-gray-900 text-white px-8 py-3 rounded-lg text-lg transition-transform duration-100 hover:scale-105"
             style={{ backgroundColor: 'rgb(17 24 39)' }}
           >
             View Projects
           </Link>
           <Link
-            href="/contact"
+            href={createPath('/contact')}
             className="btn bg-gray-900 text-white px-8 py-3 rounded-lg text-lg transition-transform duration-100 hover:scale-105"
             style={{ backgroundColor: 'rgb(17 24 39)' }}
           >
