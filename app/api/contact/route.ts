@@ -75,7 +75,7 @@ export async function POST(request: NextRequest) {
     await sgMail.send(msg)
 
     console.log('Contact form email sent successfully:', {
-      to: process.env.EMAIL_USER,
+      to: recipientEmail,
       from: email,
       subject,
       timestamp: new Date().toISOString()
