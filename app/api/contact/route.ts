@@ -62,8 +62,10 @@ export async function POST(request: NextRequest) {
     `
 
     // Prepare email message
+    // Send to Kamil's email, but use EMAIL_USER as the sender (must be verified in SendGrid)
+    const recipientEmail = 'Kamiltopeklin@gmail.com'
     const msg = {
-      to: process.env.EMAIL_USER!,
+      to: recipientEmail,
       from: process.env.EMAIL_USER!,
       replyTo: email,
       subject: `Portfolio Contact: ${subject}`,
