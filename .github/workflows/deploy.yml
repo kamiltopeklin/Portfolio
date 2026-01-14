@@ -9,15 +9,15 @@ permissions:
   contents: read
   pages: write
   id-token: write
-  actions: write  # Required to delete artifacts
 
 concurrency:
-  group: "pages"
+  group: pages
   cancel-in-progress: true
 
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout
         uses: actions/checkout@v4
@@ -25,8 +25,8 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '18'
-          cache: 'npm'
+          node-version: 18
+          cache: npm
 
       - name: Install dependencies
         run: npm ci
@@ -39,89 +39,19 @@ jobs:
       - name: Setup Pages
         uses: actions/configure-pages@v4
 
-      - name: Upload artifact
+      - name: Upload Pages artifact
         uses: actions/upload-pages-artifact@v3
         with:
-          path: './out'
-          retention-days: 1
+          path: ./out
 
   deploy:
+    needs: build
+    runs-on: ubuntu-latest
     environment:
       name: github-pages
       url: ${{ steps.deployment.outputs.page_url }}
-    runs-on: ubuntu-latest
-    needs: build
+
     steps:
-      - name: Cleanup old artifacts from this workflow run
-        uses: actions/github-script@v7
-        with:
-          script: |
-            // Get all artifacts from the current workflow run
-            const artifacts = await github.rest.actions.listWorkflowRunArtifacts({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              run_id: context.runId,
-            });
-
-            console.log(`Found ${artifacts.data.artifacts.length} total artifacts in this workflow run`);
-            
-            // Find all "github-pages" artifacts
-            const githubPagesArtifacts = artifacts.data.artifacts.filter(
-              artifact => artifact.name === 'github-pages'
-            );
-            
-            console.log(`Found ${githubPagesArtifacts.length} "github-pages" artifacts`);
-            
-            if (githubPagesArtifacts.length > 1) {
-              console.log(`Multiple artifacts found. Sorting by creation date...`);
-              
-              // Sort by creation date (newest first)
-              githubPagesArtifacts.sort((a, b) => 
-                new Date(b.created_at) - new Date(a.created_at)
-              );
-              
-              console.log(`Keeping the most recent artifact: ${githubPagesArtifacts[0].id} (created: ${githubPagesArtifacts[0].created_at})`);
-              
-              // Delete all except the most recent one
-              for (let i = 1; i < githubPagesArtifacts.length; i++) {
-                try {
-                  await github.rest.actions.deleteArtifact({
-                    owner: context.repo.owner,
-                    repo: context.repo.repo,
-                    artifact_id: githubPagesArtifacts[i].id,
-                  });
-                  console.log(`✓ Deleted old artifact: ${githubPagesArtifacts[i].id} (created: ${githubPagesArtifacts[i].created_at})`);
-                } catch (error) {
-                  console.log(`✗ Failed to delete artifact ${githubPagesArtifacts[i].id}: ${error.message}`);
-                }
-              }
-              
-              // Wait a moment for deletions to propagate
-              console.log('Waiting for artifact deletions to propagate...');
-              await new Promise(resolve => setTimeout(resolve, 2000));
-              
-              // Verify cleanup
-              const verifyArtifacts = await github.rest.actions.listWorkflowRunArtifacts({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                run_id: context.runId,
-              });
-              
-              const remaining = verifyArtifacts.data.artifacts.filter(
-                artifact => artifact.name === 'github-pages'
-              );
-              
-              console.log(`After cleanup: ${remaining.length} "github-pages" artifact(s) remaining`);
-              
-              if (remaining.length > 1) {
-                throw new Error(`Cleanup failed: Still ${remaining.length} artifacts remaining. Please delete old workflow runs manually.`);
-              }
-            } else if (githubPagesArtifacts.length === 0) {
-              console.log('⚠ No "github-pages" artifacts found in this workflow run.');
-            } else {
-              console.log('✓ Only one "github-pages" artifact found. No cleanup needed.');
-            }
-
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
