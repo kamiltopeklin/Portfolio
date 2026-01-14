@@ -1,6 +1,7 @@
 'use client'
 
 import { useState } from 'react'
+import emailjs from '@emailjs/browser'
 
 export default function Contact() {
   const [formData, setFormData] = useState({
@@ -32,26 +33,58 @@ export default function Contact() {
     setSubmitStatus('idle')
 
     try {
-      // For GitHub Pages, use mailto as fallback or EmailJS
-      // Option 1: Direct mailto (simple but requires email client)
-      const mailtoLink = `mailto:Kamiltopeklin@gmail.com?subject=${encodeURIComponent(formData.subject)}&body=${encodeURIComponent(`From: ${formData.email}\n\n${formData.message}`)}`
-      
-      // Try to open mailto (works on most devices)
-      window.location.href = mailtoLink
-      
-      // Show success after a short delay
-      setTimeout(() => {
-        setSubmitStatus('success')
-        setFormData({
-          email: '',
-          subject: '',
-          message: '',
-          acceptPrivacy: false
-        })
-        const form = e.target as HTMLFormElement
-        form.reset()
-        setIsSubmitting(false)
-      }, 500)
+      // EmailJS configuration
+      // These should be set as environment variables or you can hardcode them temporarily
+      const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID || 'YOUR_SERVICE_ID'
+      const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID || 'YOUR_TEMPLATE_ID'
+      const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY || 'YOUR_PUBLIC_KEY'
+
+      // Check if EmailJS is configured
+      if (serviceId === 'YOUR_SERVICE_ID' || templateId === 'YOUR_TEMPLATE_ID' || publicKey === 'YOUR_PUBLIC_KEY') {
+        // Fallback to mailto if EmailJS is not configured
+        const mailtoLink = `mailto:Kamiltopeklin@gmail.com?subject=${encodeURIComponent(formData.subject)}&body=${encodeURIComponent(`From: ${formData.email}\n\n${formData.message}`)}`
+        window.location.href = mailtoLink
+        
+        setTimeout(() => {
+          setSubmitStatus('success')
+          setFormData({
+            email: '',
+            subject: '',
+            message: '',
+            acceptPrivacy: false
+          })
+          const form = e.target as HTMLFormElement
+          form.reset()
+          setIsSubmitting(false)
+        }, 500)
+        return
+      }
+
+      // Initialize EmailJS with public key
+      emailjs.init(publicKey)
+
+      // Send email via EmailJS
+      const templateParams = {
+        to_email: 'Kamiltopeklin@gmail.com',
+        from_email: formData.email,
+        subject: formData.subject,
+        message: formData.message,
+        reply_to: formData.email,
+      }
+
+      await emailjs.send(serviceId, templateId, templateParams)
+
+      // Success
+      setSubmitStatus('success')
+      setFormData({
+        email: '',
+        subject: '',
+        message: '',
+        acceptPrivacy: false
+      })
+      const form = e.target as HTMLFormElement
+      form.reset()
+      setIsSubmitting(false)
       
     } catch (error) {
       console.error('Form submission error:', error)
