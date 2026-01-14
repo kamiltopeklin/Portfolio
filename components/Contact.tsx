@@ -33,19 +33,54 @@ export default function Contact() {
     setSubmitStatus('idle')
 
     try {
-      // EmailJS configuration
-      // These should be set as environment variables or you can hardcode them temporarily
-      const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID || 'YOUR_SERVICE_ID'
-      const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID || 'YOUR_TEMPLATE_ID'
-      const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY || 'YOUR_PUBLIC_KEY'
+      // EmailJS configuration - Replace these with your actual EmailJS credentials
+      // Get them from: https://www.emailjs.com/
+      const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID || ''
+      const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID || ''
+      const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY || ''
 
       // Check if EmailJS is configured
-      if (serviceId === 'YOUR_SERVICE_ID' || templateId === 'YOUR_TEMPLATE_ID' || publicKey === 'YOUR_PUBLIC_KEY') {
-        // EmailJS is not configured - show error message
-        setSubmitStatus('error')
-        setIsSubmitting(false)
-        alert('Email service is not configured. Please email directly at Kamiltopeklin@gmail.com or contact the site administrator.')
-        return
+      if (!serviceId || !templateId || !publicKey) {
+        // Try to use Formspree as fallback (simpler alternative)
+        // You can get a free Formspree endpoint at: https://formspree.io/
+        const formspreeEndpoint = process.env.NEXT_PUBLIC_FORMSPREE_ENDPOINT || ''
+        
+        if (formspreeEndpoint) {
+          // Use Formspree
+          const response = await fetch(formspreeEndpoint, {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              email: formData.email,
+              subject: formData.subject,
+              message: formData.message,
+              _replyto: formData.email,
+            }),
+          })
+
+          if (response.ok) {
+            setSubmitStatus('success')
+            setFormData({
+              email: '',
+              subject: '',
+              message: '',
+              acceptPrivacy: false
+            })
+            const form = e.target as HTMLFormElement
+            form.reset()
+            setIsSubmitting(false)
+            return
+          } else {
+            throw new Error('Formspree submission failed')
+          }
+        } else {
+          // No email service configured
+          setSubmitStatus('error')
+          setIsSubmitting(false)
+          return
+        }
       }
 
       // Initialize EmailJS with public key
