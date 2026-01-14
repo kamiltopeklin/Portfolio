@@ -41,22 +41,10 @@ export default function Contact() {
 
       // Check if EmailJS is configured
       if (serviceId === 'YOUR_SERVICE_ID' || templateId === 'YOUR_TEMPLATE_ID' || publicKey === 'YOUR_PUBLIC_KEY') {
-        // Fallback to mailto if EmailJS is not configured
-        const mailtoLink = `mailto:Kamiltopeklin@gmail.com?subject=${encodeURIComponent(formData.subject)}&body=${encodeURIComponent(`From: ${formData.email}\n\n${formData.message}`)}`
-        window.location.href = mailtoLink
-        
-        setTimeout(() => {
-          setSubmitStatus('success')
-          setFormData({
-            email: '',
-            subject: '',
-            message: '',
-            acceptPrivacy: false
-          })
-          const form = e.target as HTMLFormElement
-          form.reset()
-          setIsSubmitting(false)
-        }, 500)
+        // EmailJS is not configured - show error message
+        setSubmitStatus('error')
+        setIsSubmitting(false)
+        alert('Email service is not configured. Please email directly at Kamiltopeklin@gmail.com or contact the site administrator.')
         return
       }
 
