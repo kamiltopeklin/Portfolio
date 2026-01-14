@@ -86,32 +86,6 @@ export default function Contact() {
         alert('Email service not configured. Please set up Formspree at https://formspree.io/ and add your endpoint URL to Contact.tsx (line ~38)')
         return
       }
-
-      // Initialize EmailJS with public key
-      emailjs.init(publicKey)
-
-      // Send email via EmailJS
-      const templateParams = {
-        to_email: 'Kamiltopeklin@gmail.com',
-        from_email: formData.email,
-        subject: formData.subject,
-        message: formData.message,
-        reply_to: formData.email,
-      }
-
-      await emailjs.send(serviceId, templateId, templateParams)
-
-      // Success
-      setSubmitStatus('success')
-      setFormData({
-        email: '',
-        subject: '',
-        message: '',
-        acceptPrivacy: false
-      })
-      const form = e.target as HTMLFormElement
-      form.reset()
-      setIsSubmitting(false)
       
     } catch (error) {
       console.error('Form submission error:', error)
