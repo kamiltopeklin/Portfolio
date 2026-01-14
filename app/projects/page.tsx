@@ -1,16 +1,25 @@
 'use client'
 
 import Image from 'next/image'
+import { useEffect, useState } from 'react'
 
 export default function Projects() {
+  const [basePath, setBasePath] = useState('')
+
+  useEffect(() => {
+    // Detect basePath from current URL
+    if (typeof window !== 'undefined') {
+      const pathname = window.location.pathname
+      if (pathname.startsWith('/Portfolio')) {
+        setBasePath('/Portfolio')
+      } else {
+        setBasePath('')
+      }
+    }
+  }, [])
 
   // Helper function to get image path based on project name
   const getImagePath = (projectName: string): string => {
-    // Get basePath for GitHub Pages
-    const basePath = typeof window !== 'undefined' && window.location.pathname.startsWith('/Portfolio') 
-      ? '/Portfolio' 
-      : ''
-    
     const imageMap: { [key: string]: string } = {
       'Zendesk Agent Workspace': '/images/Zendesk Agent Workspace.png',
       'Zendesk Adaptable Agent Workspace': '/images/Zendesk Adaptable Agent.png',
