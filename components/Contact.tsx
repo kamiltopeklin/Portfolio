@@ -32,58 +32,42 @@ export default function Contact() {
     setSubmitStatus('idle')
 
     try {
-      // FORMSPREE SETUP (EASIEST OPTION):
-      // 1. Go to https://formspree.io/ and sign up (free)
-      // 2. Create a new form
-      // 3. Set email to: Kamiltopeklin@gmail.com
-      // 4. Copy your form endpoint URL (looks like: https://formspree.io/f/xxxxxxxxxx)
-      // 5. Replace the URL below with your Formspree endpoint
-      const FORMSPREE_ENDPOINT = 'https://formspree.io/f/YOUR_FORM_ID_HERE'
+      // FormSubmit - Simple form submission service (no API key needed!)
+      // Just needs your email address
+      const recipientEmail = 'Kamiltopeklin@gmail.com'
       
-      // If you want to use EmailJS instead, uncomment and configure these:
-      // const serviceId = process.env.NEXT_PUBLIC_EMAILJS_SERVICE_ID || ''
-      // const templateId = process.env.NEXT_PUBLIC_EMAILJS_TEMPLATE_ID || ''
-      // const publicKey = process.env.NEXT_PUBLIC_EMAILJS_PUBLIC_KEY || ''
+      const response = await fetch(`https://formsubmit.co/ajax/${recipientEmail}`, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'Accept': 'application/json',
+        },
+        body: JSON.stringify({
+          name: formData.email,
+          email: formData.email,
+          subject: formData.subject,
+          message: formData.message,
+          _replyto: formData.email,
+        }),
+      })
 
-      // Use Formspree (simplest solution for static sites)
-      if (FORMSPREE_ENDPOINT && !FORMSPREE_ENDPOINT.includes('YOUR_FORM_ID_HERE')) {
-        const response = await fetch(FORMSPREE_ENDPOINT, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json',
-          },
-          body: JSON.stringify({
-            email: formData.email,
-            subject: formData.subject,
-            message: formData.message,
-            _replyto: formData.email,
-          }),
+      const result = await response.json()
+
+      if (response.ok && result.success) {
+        setSubmitStatus('success')
+        setFormData({
+          email: '',
+          subject: '',
+          message: '',
+          acceptPrivacy: false
         })
-
-        if (response.ok) {
-          setSubmitStatus('success')
-          setFormData({
-            email: '',
-            subject: '',
-            message: '',
-            acceptPrivacy: false
-          })
-          const form = e.target as HTMLFormElement
-          form.reset()
-          setIsSubmitting(false)
-          return
-        } else {
-          const errorData = await response.json().catch(() => ({}))
-          console.error('Formspree error:', errorData)
-          throw new Error('Failed to send message')
-        }
-      } else {
-        // No email service configured
-        setSubmitStatus('error')
+        const form = e.target as HTMLFormElement
+        form.reset()
         setIsSubmitting(false)
-        alert('Email service not configured. Please set up Formspree at https://formspree.io/ and add your endpoint URL to Contact.tsx (line ~38)')
         return
+      } else {
+        console.error('FormSubmit error:', result)
+        throw new Error(result.message || 'Failed to send message')
       }
       
     } catch (error) {
